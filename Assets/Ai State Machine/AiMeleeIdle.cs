@@ -18,13 +18,15 @@ public class AiMeleeIdle : IAiState
 
     public void Update(AiAgent agent)
     {
-        LineOfSight(agent);
-        if (agent.canSee)
+        
+        if (!agent.canSee)
         {
-            agent.StateMachine.ChangeState(AiStateId.MeleeChase);
+            LineOfSight(agent);
         }
-        
-        
+        else
+        {
+            agent.StateMachine.ChangeState(AiStateId.MeleeChase); 
+        }
     }
 
     public void Exit(AiAgent agent)

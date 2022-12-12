@@ -17,7 +17,7 @@ public class AiMeleeChase : IAiState
 
     public void Update(AiAgent agent)
     {
-        agent.navMeshAgent.destination = agent.player.transform.position;
+        agent.HandleMoveToPlayer();
     }
 
     public void Exit(AiAgent agent)

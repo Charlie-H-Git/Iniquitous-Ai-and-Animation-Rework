@@ -10,7 +10,7 @@ using UnityEngine.AI;
 using UnityEngine.Rendering;
 
 [RequireComponent(typeof(EnemyHealth))]
-[RequireComponent(typeof(NavMeshAgent))]
+
 public class AiAgent : MonoBehaviour
 {
     public AiStateId currentState;
@@ -20,8 +20,9 @@ public class AiAgent : MonoBehaviour
     public AiStateId intialState;
     public GameObject player;
     public TMP_Text stateText;
-    
-
+    private EnemyManager _enemyManager;
+    private EnemyAnimatorManager _enemyAnimatorManager;
+    public Rigidbody _enemyRigidbody;
     [Header("Idle State Variables")] 
     public float angleFromPlayer;
     public float distanceFromPlayer;
@@ -31,7 +32,11 @@ public class AiAgent : MonoBehaviour
     public float coneAngle;
     public float detectionDistance;
     public LayerMask combatMask;
-    
+
+    [Header("Chase Values")] 
+    public float stoppingDistance = 1f;
+
+    public float rotationSpeed = 15;
     private void AssignStates()
     {
         StateMachine = new AiStateMachine(this);
@@ -40,15 +45,19 @@ public class AiAgent : MonoBehaviour
     }
     private void Awake()
     {
-        
+        _enemyRigidbody = GetComponent<Rigidbody>();
+        _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
+        _enemyManager = GetComponent<EnemyManager>();
         AssignStates();
     }
     
     public void Start()
     {
-        navMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         StateMachine.ChangeState(intialState);
-       
+
+        navMeshAgent.enabled = false;
+        _enemyRigidbody.isKinematic = false;
     }
     public void TargetVectors()
     {
@@ -60,34 +69,58 @@ public class AiAgent : MonoBehaviour
 
     public void HandleMoveToPlayer()
     {
-        //Angle from player
+
+        if (_enemyManager.isPerformingAction)
+        {
+            _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
+            navMeshAgent.enabled = false;
+        }
+        else
+        {
+            if (distanceFromPlayer > stoppingDistance)
+            {
+                _enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
+            }else if (distanceFromPlayer <= stoppingDistance)
+            {
+                _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
+            }
+        }
         
-        //If performing action
-        //Set the speed Value to 0 by 0.1 over Time.deltatime
-        //Deactivate Nav Mesh
-        //Else
-        //if distance from player is > stopping distance
-        //Set Speed Value to 1 by 0.1 over Time.deltatime
+        HandleRotationToPlayer();
         
-        //navmesh local position = vector.0
-        //navmesh local rotation = quaternion identity
+        navMeshAgent.transform.localPosition = Vector3.zero;
+        navMeshAgent.transform.localRotation = Quaternion.identity;
+        
     }
 
     private void HandleRotationToPlayer()
     {
-        //if performing action Rotate Manually (Root Motion)
-        // Get direction
-        //Set direction y to 0
-        //Normalize Direction
-        //if direction is comparative to vector 0
-        //direction = transform forward
-        // new target rotation = quaternion look rotation(direction)
-        //tranform rotation = quat slerp(trans.rotation, player.rotation, rotation speed)
-        //else
-        // RelativeDirection = transform.inverseTransformDirection(navmeshagent.desiredVelocity)
-        // navmeshagent = enabled
-        //navmeshSetDestination(player.transform.poition)
+        //Rotate Manually
+        if (_enemyManager.isPerformingAction)
+        {
+            Vector3 direction = player.transform.position - transform.position;
+            direction.y = 0;
+            direction.Normalize();
+            if (direction == Vector3.zero)
+            {
+                direction = transform.forward;
+            }
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed / Time.deltaTime );
+        }
+        else
+        {
+           Vector3 relativeDirection = transform.InverseTransformDirection(navMeshAgent.desiredVelocity);
+           Vector3 targetVelocity = _enemyRigidbody.velocity;
+
+           navMeshAgent.enabled = true;
+           navMeshAgent.SetDestination(player.transform.position);
+           _enemyRigidbody.velocity = targetVelocity;
+           transform.rotation = Quaternion.Slerp(transform.rotation, navMeshAgent.transform.rotation, rotationSpeed / Time.deltaTime);
+        }
     }
+    
+    
 
     // public void OnObjectSpawn()
     // {
@@ -126,18 +159,22 @@ public class AiAgent : MonoBehaviour
         StateMachine.Update();
         TargetVectors();
     }
+    
+    private Vector3 arcOffsetVector = new Vector3(0, 0.25f, 0); 
     private void OnDrawGizmos()
     {
-        foreach (var corner in navMeshAgent.path.corners)
+        if (navMeshAgent != null)
         {
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawSphere(corner,0.5f);
+            foreach (var corner in navMeshAgent.path.corners)
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawSphere(corner,0.1f);
+            } 
         }
-        
         Handles.color = Color.red.WithAlphaMultiplied(0.2f);
         Handles.zTest = CompareFunction.LessEqual;
-        Handles.DrawSolidArc(transform.position,Vector3.up, transform.forward,coneAngle, detectionDistance);
-        Handles.DrawSolidArc(transform.position,Vector3.up, transform.forward,-coneAngle, detectionDistance);
+        Handles.DrawSolidArc(transform.position + arcOffsetVector,Vector3.up, transform.forward,coneAngle, detectionDistance);
+        Handles.DrawSolidArc(transform.position + arcOffsetVector,Vector3.up, transform.forward,-coneAngle, detectionDistance);
     }
     
 }
