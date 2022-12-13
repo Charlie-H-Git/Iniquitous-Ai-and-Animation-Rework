@@ -8,10 +8,8 @@ using UnityEngine;
 public enum AiStateId
 {
     MeleeChase,
-    EngagePlayer,
+    MeleeAttack,
     MeleeIdle,
-    TauntState,
-    AiFlankState
 }
 
 public interface IAiState

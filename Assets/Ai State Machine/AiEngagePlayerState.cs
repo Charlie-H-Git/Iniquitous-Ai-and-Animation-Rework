@@ -7,10 +7,9 @@ using UnityEngine;
 
 public class AiEngagePlayerState : IAiState
 {
-    
     public AiStateId GetId()
     {
-        return AiStateId.EngagePlayer;
+        throw new NotImplementedException();
     }
 
     public void Enter(AiAgent agent)

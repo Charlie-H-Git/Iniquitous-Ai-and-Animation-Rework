@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(EnemyHealth))]
 
@@ -20,8 +21,8 @@ public class AiAgent : MonoBehaviour
     public AiStateId intialState;
     public GameObject player;
     public TMP_Text stateText;
-    private EnemyManager _enemyManager;
-    private EnemyAnimatorManager _enemyAnimatorManager;
+    public EnemyManager _enemyManager;
+    public EnemyAnimatorManager _enemyAnimatorManager;
     public Rigidbody _enemyRigidbody;
     [Header("Idle State Variables")] 
     public float angleFromPlayer;
@@ -32,16 +33,23 @@ public class AiAgent : MonoBehaviour
     public float coneAngle;
     public float detectionDistance;
     public LayerMask combatMask;
-
+    public float currentRecoveryTime = 0;
     [Header("Chase Values")] 
     public float stoppingDistance = 1f;
 
+    private ResetAnimatorBool _resetAnimatorBool;
     public float rotationSpeed = 15;
+
+    [Header("Attack Variables")] 
+    public EnemyAttackAction[] enemyAttacks;
+
+    public EnemyAttackAction currentAttack;
     private void AssignStates()
     {
         StateMachine = new AiStateMachine(this);
         StateMachine.RegisterState(new AiMeleeChase());
         StateMachine.RegisterState(new AiMeleeIdle());
+        StateMachine.RegisterState(new AiMeleeAttack());
     }
     private void Awake()
     {
@@ -49,6 +57,7 @@ public class AiAgent : MonoBehaviour
         _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
         navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         _enemyManager = GetComponent<EnemyManager>();
+        navMeshAgent.stoppingDistance = stoppingDistance;
         AssignStates();
     }
     
@@ -66,65 +75,22 @@ public class AiAgent : MonoBehaviour
         angleFromPlayer =  Vector3.Angle(targetDir, forward);
     }
 
-    public void HandleMoveToPlayer()
+    private void HandleRecoveryTimer()
     {
+        if (currentRecoveryTime > 0)
+        {
+            currentRecoveryTime -= Time.deltaTime;
+        }
 
         if (_enemyManager.isPerformingAction)
         {
-            //If performing an action set the movement to 0
-            _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
-            navMeshAgent.enabled = false;
-        }
-        else
-        {
-            //if we are not performing an action
-            // if the distance from player is greater than stopping distance
-            if (distanceFromPlayer > stoppingDistance)
+            if (currentRecoveryTime <= 0)
             {
-                //Set the movement to 1 over time
-                _enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
-                
-            }else if (distanceFromPlayer <= stoppingDistance)
-            {
-                _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
+                _enemyManager.isPerformingAction = false;
             }
         }
-        
-        HandleRotationToPlayer();
-        //Set navmesh local transform values to zero
-        navMeshAgent.transform.localPosition = Vector3.zero;
-        navMeshAgent.transform.localRotation = Quaternion.identity;
-        
     }
-
-    private void HandleRotationToPlayer()
-    {
-        //Rotate Manually
-        if (_enemyManager.isPerformingAction)
-        {
-            Vector3 direction = player.transform.position - transform.position;
-            direction.y = 0;
-            direction.Normalize();
-            if (direction == Vector3.zero)
-            {
-                direction = transform.forward;
-            }
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed / Time.deltaTime );
-        }
-        //Rotate with pathfinding
-        else
-        {
-           Vector3 relativeDirection = transform.InverseTransformDirection(navMeshAgent.desiredVelocity);
-           Vector3 targetVelocity = _enemyRigidbody.velocity;
-
-           navMeshAgent.enabled = true;
-           navMeshAgent.SetDestination(player.transform.position);
-           _enemyRigidbody.velocity = targetVelocity;
-           transform.rotation = Quaternion.Slerp(transform.rotation, navMeshAgent.transform.rotation, rotationSpeed / Time.deltaTime);
-        }
-    }
-
+   
     // public void OnObjectSpawn()
     // {
     //     _navMeshAgent.enabled = true;
@@ -161,6 +127,7 @@ public class AiAgent : MonoBehaviour
         currentState = StateMachine.CurrentState;
         StateMachine.Update();
         TargetVectors();
+        HandleRecoveryTimer();
     }
     
     private Vector3 arcOffsetVector = new Vector3(0, 0.25f, 0); 

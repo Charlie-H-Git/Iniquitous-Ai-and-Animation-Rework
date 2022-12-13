@@ -2940,6 +2940,8 @@ MonoBehaviour:
   intialState: 2
   player: {fileID: 1818348192}
   stateText: {fileID: 0}
+  _enemyManager: {fileID: 0}
+  _enemyAnimatorManager: {fileID: 0}
   _enemyRigidbody: {fileID: 0}
   angleFromPlayer: 0
   distanceFromPlayer: 0
@@ -2947,12 +2949,18 @@ MonoBehaviour:
   canSee: 0
   inCone: 0
   coneAngle: 30
-  detectionDistance: 10
+  detectionDistance: 12.91
   combatMask:
     serializedVersion: 2
     m_Bits: 64
-  stoppingDistance: 1
-  rotationSpeed: 15
+  currentRecoveryTime: 0
+  stoppingDistance: 2.5
+  rotationSpeed: 35
+  enemyAttacks:
+  - {fileID: 11400000, guid: 367d5d7b47c1c1242a8b9f3ef8f14ae6, type: 2}
+  - {fileID: 11400000, guid: 897634c41b4138b4c863171b43082444, type: 2}
+  - {fileID: 11400000, guid: c7ab46bcbc9c565409a5706b8d67064c, type: 2}
+  currentAttack: {fileID: 0}
 --- !u!114 &619641446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4048,12 +4056,12 @@ NavMeshAgent:
   m_GameObject: {fileID: 941975347}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 1
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 0
+  m_StoppingDistance: 1
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -5583,7 +5591,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 5f8388eab62ffa84f953796dc5d535c5, type: 2}
+      objectReference: {fileID: 9100000, guid: 1bc947d156a3d9348831d2608e352311, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 63620d86328b16a43baae9f315100a0c, type: 3}
 --- !u!1 &1230401188
@@ -6004,7 +6012,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 1
   m_StaticEditorFlags: 8
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1454177202
 Transform:
   m_ObjectHideFlags: 0
@@ -6701,6 +6709,8 @@ MonoBehaviour:
   intialState: 2
   player: {fileID: 1818348192}
   stateText: {fileID: 0}
+  _enemyManager: {fileID: 0}
+  _enemyAnimatorManager: {fileID: 0}
   _enemyRigidbody: {fileID: 0}
   angleFromPlayer: 0
   distanceFromPlayer: 0
@@ -6712,8 +6722,11 @@ MonoBehaviour:
   combatMask:
     serializedVersion: 2
     m_Bits: 64
+  currentRecoveryTime: 0
   stoppingDistance: 5
   rotationSpeed: 35
+  enemyAttacks: []
+  currentAttack: {fileID: 0}
 --- !u!114 &1570968572
 MonoBehaviour:
   m_ObjectHideFlags: 0

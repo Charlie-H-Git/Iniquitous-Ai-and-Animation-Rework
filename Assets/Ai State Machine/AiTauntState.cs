@@ -6,7 +6,7 @@ public class AiTauntState : IAiState
 {
     public AiStateId GetId()
     {
-        return AiStateId.TauntState;
+        throw new System.NotImplementedException();
     }
 
     public void Enter(AiAgent agent)
