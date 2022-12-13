@@ -47,15 +47,14 @@ public class AiAgent : MonoBehaviour
     {
         _enemyRigidbody = GetComponent<Rigidbody>();
         _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
+        navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         _enemyManager = GetComponent<EnemyManager>();
         AssignStates();
     }
     
     public void Start()
     {
-        navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         StateMachine.ChangeState(intialState);
-
         navMeshAgent.enabled = false;
         _enemyRigidbody.isKinematic = false;
     }
@@ -72,14 +71,19 @@ public class AiAgent : MonoBehaviour
 
         if (_enemyManager.isPerformingAction)
         {
+            //If performing an action set the movement to 0
             _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
             navMeshAgent.enabled = false;
         }
         else
         {
+            //if we are not performing an action
+            // if the distance from player is greater than stopping distance
             if (distanceFromPlayer > stoppingDistance)
             {
+                //Set the movement to 1 over time
                 _enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
+                
             }else if (distanceFromPlayer <= stoppingDistance)
             {
                 _enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
@@ -87,7 +91,7 @@ public class AiAgent : MonoBehaviour
         }
         
         HandleRotationToPlayer();
-        
+        //Set navmesh local transform values to zero
         navMeshAgent.transform.localPosition = Vector3.zero;
         navMeshAgent.transform.localRotation = Quaternion.identity;
         
@@ -108,6 +112,7 @@ public class AiAgent : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed / Time.deltaTime );
         }
+        //Rotate with pathfinding
         else
         {
            Vector3 relativeDirection = transform.InverseTransformDirection(navMeshAgent.desiredVelocity);
@@ -119,8 +124,6 @@ public class AiAgent : MonoBehaviour
            transform.rotation = Quaternion.Slerp(transform.rotation, navMeshAgent.transform.rotation, rotationSpeed / Time.deltaTime);
         }
     }
-    
-    
 
     // public void OnObjectSpawn()
     // {

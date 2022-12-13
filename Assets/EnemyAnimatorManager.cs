@@ -6,6 +6,7 @@ using UnityEngine;
 public class EnemyAnimatorManager : AnimatorManager
 {
    private AiAgent _aiAgent;
+   
    private void Awake()
    {
       _aiAgent = GetComponentInParent<AiAgent>();
