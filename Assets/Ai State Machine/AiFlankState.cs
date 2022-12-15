@@ -6,9 +6,11 @@ public class AiFlankState : IAiState
     private Vector3 _rightFlank;
     private Vector3 _leftFlank;
     private Vector3 _rearFlank;
+
+
     public AiStateId GetId()
     {
-        return AiStateId.AiFlankState;
+        throw new System.NotImplementedException();
     }
 
     public void Enter(AiAgent agent)
