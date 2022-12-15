@@ -39,10 +39,14 @@ public class AiMeleeCombatStance : IAiState
         
         HandleRotationToTarget(agent);
         
-        if (agent.currentRecoveryTime <= 0 && agent.distanceFromPlayer <= agent.maximumAttackRange)
+        if (agent.currentRecoveryTime <= 0 && agent.currentAttack != null)
         {
             randomDestinationSet = false;
             agent.StateMachine.ChangeState(AiStateId.MeleeAttack);
+        }
+        else
+        {
+            GetNewAttack(agent);
         }
         
        
@@ -104,6 +108,47 @@ public class AiMeleeCombatStance : IAiState
         else if(horizontalMovementValue >= -1 && horizontalMovementValue < 0)
         {
             horizontalMovementValue = -0.5f;
+        }
+    }
+    
+    private void GetNewAttack(AiAgent agent)
+    {
+        int maxScore = 0;
+        for (int i = 0; i < agent.enemyAttacks.Length; i++)
+        {
+            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
+            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
+                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            {
+                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
+                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                {
+                    maxScore += enemyAttackAction.attackScore;
+                }
+            }
+        }
+
+        int randomValue = Random.Range(0, maxScore);
+        int tempScore = 0;
+        for (int i = 0; i < agent.enemyAttacks.Length; i++)
+        {
+            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
+            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
+                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            {
+                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
+                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                {
+                    if (agent.currentAttack != null) 
+                        return;
+                    tempScore += enemyAttackAction.attackScore;
+
+                    if (tempScore > randomValue)
+                    {
+                        agent.currentAttack = enemyAttackAction;
+                    }
+                }
+            }
         }
     }
     

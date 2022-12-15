@@ -17,12 +17,7 @@ public class AiMeleeAttack : IAiState
     public void Update(AiAgent agent)
     {
         AttackTarget(agent);
-        // if (agent._enemyManager.isPerformingAction)
-        // {
-        //     //If performing an action set the movement to 0
-        //    agent._enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
-        //     agent.navMeshAgent.enabled = false;
-        // }
+        HandleRotationToTarget(agent);
         if (agent.distanceFromPlayer > agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeChase);
@@ -44,7 +39,7 @@ public class AiMeleeAttack : IAiState
         {
             if (agent.distanceFromPlayer < agent.currentAttack.minimumDistanceToAttack)
             {
-                GetNewAttack(agent);
+                agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
             }
             else
             {
@@ -67,55 +62,39 @@ public class AiMeleeAttack : IAiState
                 }
             }
         }
-        else
-        {
-            GetNewAttack(agent);
-        }
-        //agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
     }
-    private void GetNewAttack(AiAgent agent)
-    {
-        int maxScore = 0;
-        for (int i = 0; i < agent.enemyAttacks.Length; i++)
-        {
-            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
-            {
-                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
-                {
-                    maxScore += enemyAttackAction.attackScore;
-                }
-            }
-        }
-
-        int randomValue = Random.Range(0, maxScore);
-        int tempScore = 0;
-        for (int i = 0; i < agent.enemyAttacks.Length; i++)
-        {
-            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
-            {
-                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
-                {
-                    if (agent.currentAttack != null) 
-                        return;
-                    tempScore += enemyAttackAction.attackScore;
-
-                    if (tempScore > randomValue)
-                    {
-                        agent.currentAttack = enemyAttackAction;
-                    }
-                }
-            }
-        }
-    }
+    
 
     #endregion
 
+    private void HandleRotationToTarget(AiAgent agent)
+    {
+        EnemyManager enemyManager = agent._enemyManager;
+        //Rotate Manually
+        if (enemyManager.isPerformingAction)
+        {
+            Vector3 direction = agent.player.transform.position - agent.transform.position;
+            direction.y = 0;
+            direction.Normalize();
+            if (direction == Vector3.zero)
+            {
+                direction = agent.transform.forward;
+            }
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, targetRotation, agent.rotationSpeed / Time.deltaTime );
+        }
+        //Rotate with pathfinding
+        else
+        {
+            Vector3 relativeDirection = agent.transform.InverseTransformDirection(agent.navMeshAgent.desiredVelocity);
+            Vector3 targetVelocity = agent._enemyRigidbody.velocity;
+
+            agent.navMeshAgent.enabled = true;
+            agent.navMeshAgent.SetDestination(agent.player.transform.position);
+            agent._enemyRigidbody.velocity = targetVelocity;
+            agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, agent.navMeshAgent.transform.rotation, agent.rotationSpeed / Time.deltaTime);
+        }
+    }
     public void Exit(AiAgent agent)
     {
         
