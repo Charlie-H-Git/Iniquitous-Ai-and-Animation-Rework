@@ -23,7 +23,7 @@ public class AiMeleeAttack : IAiState
         //    agent._enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
         //     agent.navMeshAgent.enabled = false;
         // }
-        if (agent.distanceFromPlayer > agent.stoppingDistance)
+        if (agent.distanceFromPlayer > agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeChase);
         }
@@ -37,19 +37,41 @@ public class AiMeleeAttack : IAiState
         EnemyAnimatorManager enemyAnimatorManager = agent._enemyAnimatorManager;
         if (enemyManager.isPerformingAction)
         {
-            return;
+            agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
         }
-        if (agent.currentAttack == null)
+
+        if (agent.currentAttack != null)
         {
-            GetNewAttack(agent);
+            if (agent.distanceFromPlayer < agent.currentAttack.minimumDistanceToAttack)
+            {
+                GetNewAttack(agent);
+            }
+            else
+            {
+                if (agent.distanceFromPlayer < agent.currentAttack.maximumDistanceToAttack)
+                {
+                    if (agent.angleFromPlayer <= agent.currentAttack.maximumAttackAngle 
+                        && agent.angleFromPlayer >= agent.currentAttack.minimumAttackAngle)
+                    {
+                        if (agent.currentRecoveryTime <= 0 && agent._enemyManager.isPerformingAction == false)
+                        {
+                            
+                            agent._enemyAnimatorManager.anim.SetFloat("Blend", 0 , 0.1f , Time.deltaTime);
+                            enemyAnimatorManager.PlayTargetAnimation(agent.currentAttack.actionAnimation, true);
+                            agent._enemyManager.isPerformingAction = true;
+                            agent.currentRecoveryTime = agent.currentAttack.recoveryTime;
+                            agent.currentAttack = null;
+                            agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
+                        }
+                    }
+                }
+            }
         }
         else
         {
-            enemyManager.isPerformingAction = true;
-            agent.currentRecoveryTime = agent.currentAttack.recoveryTime;
-            enemyAnimatorManager.PlayTargetAnimation(agent.currentAttack.actionAnimation, true);
-            agent.currentAttack = null;
+            GetNewAttack(agent);
         }
+        //agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
     }
     private void GetNewAttack(AiAgent agent)
     {

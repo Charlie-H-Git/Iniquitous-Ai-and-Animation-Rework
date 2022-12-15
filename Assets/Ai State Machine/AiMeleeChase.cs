@@ -13,55 +13,48 @@ public class AiMeleeChase : IAiState
     public void Enter(AiAgent agent)
     {
         agent.navMeshAgent.enabled = true;
+       agent._gameManager.DeRegisterAttacker(agent);
     }
 
     public void Update(AiAgent agent)
     {
-        HandleMoveToPlayer(agent);
+        HandleMoveToTarget(agent);
     }
 
     #region Handle Moving To Target Position
 
-    private void HandleMoveToPlayer(AiAgent agent)
+    private void HandleMoveToTarget(AiAgent agent)
     {
         EnemyManager enemyManager = agent._enemyManager;
         EnemyAnimatorManager enemyAnimatorManager = agent._enemyAnimatorManager;
         if (enemyManager.isPerformingAction)
             return;
         
-        
-        if (enemyManager.isPerformingAction)
+        //if we are not performing an action
+        // if the distance from player is greater than stopping distance
+        if (agent.distanceFromPlayer > agent.maximumAttackRange)
         {
-            //If performing an action set the movement to 0
-            enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
-            agent.navMeshAgent.enabled = false;
-        }
-        else
-        {
-            //if we are not performing an action
-            // if the distance from player is greater than stopping distance
-            if (agent.distanceFromPlayer > agent.stoppingDistance)
-            {
-                //Set the movement to 1 over time
-                enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
+            //Set the movement to 1 over time
+            enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
                 
-            }else if (agent.distanceFromPlayer <= agent.stoppingDistance)
-            {
-                enemyAnimatorManager.anim.SetFloat("Blend", 0 ,0.1f, Time.deltaTime);
-                agent.StateMachine.ChangeState(AiStateId.MeleeAttack);
-            }
         }
-        
-        HandleRotationToPlayer(agent);
+        HandleRotationToTarget(agent);
 
         Transform navMeshAgentTransform = agent.navMeshAgent.transform;
         //Set navmesh local transform values to zero
         navMeshAgentTransform.localPosition = Vector3.zero;
         navMeshAgentTransform.localRotation = Quaternion.identity;
-        
+        if (agent.distanceFromPlayer <= agent.maximumAttackRange)
+        {
+            agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
+        }
+        else
+        {
+            return;
+        }
     }
 
-    private void HandleRotationToPlayer(AiAgent agent)
+    private void HandleRotationToTarget(AiAgent agent)
     {
         EnemyManager enemyManager = agent._enemyManager;
         //Rotate Manually

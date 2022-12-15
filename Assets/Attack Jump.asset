@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Attack Jump
   m_EditorClassIdentifier: 
   actionAnimation: JumpAttack
-  attackScore: 2
-  recoveryTime: 5
-  maximumAttackAngle: 35
-  minimumAttackAngle: -35
-  minimumDistanceToAttack: 2
-  maximumDistanceToAttack: 3
+  attackScore: 3
+  recoveryTime: 4
+  maximumAttackAngle: 10
+  minimumAttackAngle: -10
+  minimumDistanceToAttack: 1
+  maximumDistanceToAttack: 2.3

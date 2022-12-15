@@ -15,7 +15,7 @@ MonoBehaviour:
   actionAnimation: QuickPunch
   attackScore: 1
   recoveryTime: 1
-  maximumAttackAngle: 35
-  minimumAttackAngle: -35
-  minimumDistanceToAttack: 2
-  maximumDistanceToAttack: 2
+  maximumAttackAngle: 20
+  minimumAttackAngle: -20
+  minimumDistanceToAttack: 1
+  maximumDistanceToAttack: 2.1

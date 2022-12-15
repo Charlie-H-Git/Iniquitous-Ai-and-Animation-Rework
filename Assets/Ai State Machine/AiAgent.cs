@@ -14,56 +14,73 @@ using Random = UnityEngine.Random;
 
 public class AiAgent : MonoBehaviour
 {
+    #region ======= State Machine Variables =======
+    
     public AiStateId currentState;
-    public float faceTowards;
-    public NavMeshAgent navMeshAgent;
     public AiStateMachine StateMachine;
-    public AiStateId intialState;
-    public GameObject player;
-    public TMP_Text stateText;
+    public AiStateId initialState;
+
+    #endregion
+
+    #region ========== Manager Variables ==========
     public EnemyManager _enemyManager;
     public EnemyAnimatorManager _enemyAnimatorManager;
-    public Rigidbody _enemyRigidbody;
+    public GameManager _gameManager;
+    #endregion
+    
+    public NavMeshAgent navMeshAgent;
+    public GameObject player;
+    public TMP_Text stateText;
+    
+    
     [Header("Idle State Variables")] 
     public float angleFromPlayer;
     public float distanceFromPlayer;
     public bool los;
-    public bool canSee;
     public bool inCone;
+    public bool canSee;
     public float coneAngle;
     public float detectionDistance;
     public LayerMask combatMask;
-    public float currentRecoveryTime = 0;
-    [Header("Chase Values")] 
-    public float stoppingDistance = 1f;
-
+    
+    
+    [Header("Movement Values")]
     private ResetAnimatorBool _resetAnimatorBool;
+    public Rigidbody _enemyRigidbody;
     public float rotationSpeed = 15;
-
+    
     [Header("Attack Variables")] 
+    public float maximumAttackRange = 1.5f;
     public EnemyAttackAction[] enemyAttacks;
-
     public EnemyAttackAction currentAttack;
+    public float currentRecoveryTime = 0;
+    public bool canAttack;
+    
+    [Header("Combat Stance Variables")] 
+    public float circleRadius;
+    public Vector3 target;
     private void AssignStates()
     {
         StateMachine = new AiStateMachine(this);
         StateMachine.RegisterState(new AiMeleeChase());
         StateMachine.RegisterState(new AiMeleeIdle());
         StateMachine.RegisterState(new AiMeleeAttack());
+        StateMachine.RegisterState(new AiMeleeCombatStance());
     }
     private void Awake()
     {
+        _gameManager = FindObjectOfType<GameManager>();
         _enemyRigidbody = GetComponent<Rigidbody>();
         _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
         navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         _enemyManager = GetComponent<EnemyManager>();
-        navMeshAgent.stoppingDistance = stoppingDistance;
+        navMeshAgent.stoppingDistance = maximumAttackRange;
         AssignStates();
     }
     
     public void Start()
     {
-        StateMachine.ChangeState(intialState);
+        StateMachine.ChangeState(initialState);
         navMeshAgent.enabled = false;
         _enemyRigidbody.isKinematic = false;
     }
@@ -105,27 +122,26 @@ public class AiAgent : MonoBehaviour
     //     StateMachine.ChangeState(intialState);
     //     taunt = false;
     // }
-    // private void FlankPlayer()
+    public Vector3 circlePlayerPosition;
+    
+    
+
+    // private void OnCollisionEnter(Collision collision)
     // {
-    //     if (isMelee && StateMachine.currentState == AiStateId.AiFlankState)
+    //     if (collision.collider.gameObject.CompareTag("Enemy"))
     //     {
-    //         if (engagementCounter.FlankPlayer.Contains(gameObject))
+    //         if (!_enemyManager.isPerformingAction)
     //         {
-    //             int i = engagementCounter.FlankPlayer.IndexOf(gameObject);
-    //             int FlankCount = engagementCounter.FlankPlayer.Count;
-    //             FlankPosition = new Vector3(
-    //                 player.transform.position.x + FlankRadius * Mathf.Cos(2 * Mathf.PI * i / FlankCount),
-    //                 player.transform.position.y,
-    //                 player.transform.position.z + FlankRadius * Mathf.Sin(2 * Mathf.PI * i / FlankCount));
-    //
-    //
+    //             navMeshAgent.enabled = true;
     //         }
     //     }
     // }
+   
     void Update()
     {
         currentState = StateMachine.CurrentState;
         StateMachine.Update();
+        
         TargetVectors();
         HandleRecoveryTimer();
     }
@@ -133,12 +149,13 @@ public class AiAgent : MonoBehaviour
     private Vector3 arcOffsetVector = new Vector3(0, 0.25f, 0); 
     private void OnDrawGizmos()
     {
+        Gizmos.DrawCube(circlePlayerPosition, new Vector3(1,1,1));
         if (navMeshAgent != null)
         {
             foreach (var corner in navMeshAgent.path.corners)
             {
                 Gizmos.color = Color.magenta;
-                Gizmos.DrawSphere(corner,0.1f);
+                Gizmos.DrawSphere(corner,0.25f);
             } 
         }
         Handles.color = Color.red.WithAlphaMultiplied(0.2f);

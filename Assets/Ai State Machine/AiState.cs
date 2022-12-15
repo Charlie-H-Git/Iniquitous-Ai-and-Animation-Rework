@@ -10,6 +10,8 @@ public enum AiStateId
     MeleeChase,
     MeleeAttack,
     MeleeIdle,
+    MeleeCombatStance,
+    
 }
 
 public interface IAiState
