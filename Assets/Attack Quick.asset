@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Attack Quick
   m_EditorClassIdentifier: 
   actionAnimation: QuickPunch
+  canCombo: 1
+  comboAction: {fileID: 11400000, guid: 367d5d7b47c1c1242a8b9f3ef8f14ae6, type: 2}
   attackScore: 1
   recoveryTime: 1
   maximumAttackAngle: 20
   minimumAttackAngle: -20
-  minimumDistanceToAttack: 1
-  maximumDistanceToAttack: 2.1
+  minimumDistanceToAttack: 1.5
+  maximumDistanceToAttack: 2

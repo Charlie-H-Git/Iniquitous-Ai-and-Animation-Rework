@@ -19,25 +19,27 @@ public class AiMeleeCombatStance : IAiState
 
     public void Update(AiAgent agent)
     {
-        //Apply Vertical movement
+        agent._enemyAnimatorManager.anim.SetFloat("Vertical", verticalMovementValue, 0.2f, Time.deltaTime);
+        agent._enemyAnimatorManager.anim.SetFloat("Horizontal", horizontalMovementValue, 0.2f, Time.deltaTime);
         //Apply Horizontal Movement
 
         if (agent._enemyManager.isPerformingAction)
         {
-            //Reset Movement To zero
+            agent._enemyAnimatorManager.anim.SetFloat("Vertical", 0);
+            agent._enemyAnimatorManager.anim.SetFloat("Horizontal", 0);
         }
         if (agent.distanceFromPlayer > agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeChase);
         }
-
+        HandleRotationToTarget(agent);
         if (!randomDestinationSet)
         {
             randomDestinationSet = true;
-            DecideCirclingAction(agent._enemyAnimatorManager);
+            DecideCirclingAction(agent._enemyAnimatorManager, agent);
         }
         
-        HandleRotationToTarget(agent);
+        
         
         if (agent.currentRecoveryTime <= 0 && agent.currentAttack != null)
         {
@@ -81,9 +83,16 @@ public class AiMeleeCombatStance : IAiState
         }
     }
 
-    private void DecideCirclingAction(EnemyAnimatorManager animatorManager)
+    private void DecideCirclingAction(EnemyAnimatorManager animatorManager, AiAgent agent)
     {
-        WalkAroundPlayer(animatorManager);
+        if (agent.currentRecoveryTime > 0 )
+        {
+            WalkAroundPlayer(animatorManager);
+        }
+        else if (agent.currentRecoveryTime < 0)
+        {
+            GetNewAttack(agent);
+        }
     }
     
     private void WalkAroundPlayer(EnemyAnimatorManager animatorManager)
@@ -92,64 +101,82 @@ public class AiMeleeCombatStance : IAiState
 
         if (verticalMovementValue <= 1 && verticalMovementValue > 0)
         {
-            verticalMovementValue = 0.5f;
+            verticalMovementValue = 1f;
         }
         else if (verticalMovementValue >= -1 && verticalMovementValue < 0)
         {
-            verticalMovementValue = -0.5f;
+            verticalMovementValue = -1f;
         }
 
         horizontalMovementValue = Random.Range(-1, 1);
 
         if (horizontalMovementValue <= 1 && horizontalMovementValue >= 0)
         {
-            horizontalMovementValue = 0.5f;
+            horizontalMovementValue = 1f;
         }
         else if(horizontalMovementValue >= -1 && horizontalMovementValue < 0)
         {
-            horizontalMovementValue = -0.5f;
+            horizontalMovementValue = -1f;
         }
     }
     
     private void GetNewAttack(AiAgent agent)
     {
-        int maxScore = 0;
-        for (int i = 0; i < agent.enemyAttacks.Length; i++)
+        if (agent.entryAttackBool)
         {
-            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            int maxScore = agent.enemyAttacks.Length;
+            for (int i = 0; i < agent.enemyAttacks.Length; i++)
             {
-                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
+                if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
+                    && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
                 {
-                    maxScore += enemyAttackAction.attackScore;
+                    if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
+                        && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                    {
+                        maxScore += enemyAttackAction.attackScore;
+                    }
                 }
             }
-        }
 
-        int randomValue = Random.Range(0, maxScore);
-        int tempScore = 0;
-        for (int i = 0; i < agent.enemyAttacks.Length; i++)
-        {
-            EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            int randomValue = Random.Range(0, maxScore);
+            int tempScore = 0;
+            for (int i = 0; i < agent.enemyAttacks.Length; i++)
             {
-                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
+                if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
+                    && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
                 {
-                    if (agent.currentAttack != null) 
-                        return;
-                    tempScore += enemyAttackAction.attackScore;
-
-                    if (tempScore > randomValue)
+                    if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
+                        && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
                     {
-                        agent.currentAttack = enemyAttackAction;
+                        if (agent.currentAttack != null) 
+                            return;
+                        tempScore += enemyAttackAction.attackScore;
+
+                        if (tempScore > randomValue)
+                        {
+                            agent.currentAttack = enemyAttackAction;
+                        }
                     }
                 }
             }
         }
+        else
+        {
+            EnemyAttackAction enemyAttackAction = agent.entryAttack[0];
+            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack
+                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            {
+                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle
+                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                {
+                    agent.currentAttack = agent.entryAttack[0];
+                    agent.entryAttackBool = true;
+                }
+            }
+        }
+        
     }
     
     public void Exit(AiAgent agent)

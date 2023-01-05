@@ -52,9 +52,12 @@ public class AiAgent : MonoBehaviour
     [Header("Attack Variables")] 
     public float maximumAttackRange = 1.5f;
     public EnemyAttackAction[] enemyAttacks;
+    public bool entryAttackBool;
+    public float entryAttackCounter;
+    public EnemyAttackAction[] entryAttack;
     public EnemyAttackAction currentAttack;
     public float currentRecoveryTime = 0;
-    public bool canAttack;
+    public bool canDoCombo;
     
     [Header("Combat Stance Variables")] 
     public float circleRadius;
@@ -74,7 +77,7 @@ public class AiAgent : MonoBehaviour
         _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
         navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         _enemyManager = GetComponent<EnemyManager>();
-        navMeshAgent.stoppingDistance = maximumAttackRange;
+        // navMeshAgent.stoppingDistance = maximumAttackRange;
         AssignStates();
     }
     
@@ -122,7 +125,7 @@ public class AiAgent : MonoBehaviour
     //     StateMachine.ChangeState(intialState);
     //     taunt = false;
     // }
-    public Vector3 circlePlayerPosition;
+    
     
     
 
@@ -136,20 +139,40 @@ public class AiAgent : MonoBehaviour
     //         }
     //     }
     // }
-   
+
+    
     void Update()
     {
         currentState = StateMachine.CurrentState;
         StateMachine.Update();
-        
+        Mathf.Clamp(currentRecoveryTime, 0, 10);
         TargetVectors();
         HandleRecoveryTimer();
+        _enemyManager.isPerformingAction = _enemyAnimatorManager.anim.GetBool("isInteracting");
+        canDoCombo = _enemyAnimatorManager.anim.GetBool("canDoCombo");
+
+        if (entryAttackBool)
+        {
+            entryAttackCounter -= Time.deltaTime;
+            if (entryAttackCounter <= 0)
+            {
+                entryAttackBool = false;
+                entryAttackCounter = 30;
+            }
+        }
+        
     }
-    
+
+    private void LateUpdate()
+    {
+        navMeshAgent.transform.localPosition = Vector3.zero;
+        navMeshAgent.transform.localRotation = Quaternion.identity;
+    }
+
     private Vector3 arcOffsetVector = new Vector3(0, 0.25f, 0); 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawCube(circlePlayerPosition, new Vector3(1,1,1));
+        //Gizmos.DrawCube(circlePlayerPosition, new Vector3(1,1,1));
         if (navMeshAgent != null)
         {
             foreach (var corner in navMeshAgent.path.corners)

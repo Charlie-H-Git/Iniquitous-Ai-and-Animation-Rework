@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Attack Heavy
   m_EditorClassIdentifier: 
   actionAnimation: HeavyAttack
+  canCombo: 0
+  comboAction: {fileID: 11400000, guid: c7ab46bcbc9c565409a5706b8d67064c, type: 2}
   attackScore: 2
   recoveryTime: 3
-  maximumAttackAngle: 35
-  minimumAttackAngle: -35
-  minimumDistanceToAttack: 1
-  maximumDistanceToAttack: 2.1
+  maximumAttackAngle: 25
+  minimumAttackAngle: -25
+  minimumDistanceToAttack: 1.5
+  maximumDistanceToAttack: 2

@@ -15,7 +15,7 @@ MonoBehaviour:
   actionAnimation: JumpAttack
   attackScore: 3
   recoveryTime: 4
-  maximumAttackAngle: 10
-  minimumAttackAngle: -10
-  minimumDistanceToAttack: 1
-  maximumDistanceToAttack: 2.3
+  maximumAttackAngle: 45
+  minimumAttackAngle: -45
+  minimumDistanceToAttack: 2
+  maximumDistanceToAttack: 3

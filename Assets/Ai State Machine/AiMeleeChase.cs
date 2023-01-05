@@ -11,9 +11,10 @@ public class AiMeleeChase : IAiState
     }
 
     public void Enter(AiAgent agent)
-    {
+    { 
+        
         agent.navMeshAgent.enabled = true;
-       agent._gameManager.DeRegisterAttacker(agent);
+        agent._gameManager.DeRegisterAttacker(agent);
     }
 
     public void Update(AiAgent agent)
@@ -35,15 +36,14 @@ public class AiMeleeChase : IAiState
         if (agent.distanceFromPlayer > agent.maximumAttackRange)
         {
             //Set the movement to 1 over time
-            enemyAnimatorManager.anim.SetFloat("Blend", 1 ,0.1f, Time.deltaTime);
+            enemyAnimatorManager.anim.SetFloat("Vertical", 1 ,0.1f, Time.deltaTime);
                 
         }
         HandleRotationToTarget(agent);
 
         Transform navMeshAgentTransform = agent.navMeshAgent.transform;
         //Set navmesh local transform values to zero
-        navMeshAgentTransform.localPosition = Vector3.zero;
-        navMeshAgentTransform.localRotation = Quaternion.identity;
+        
         if (agent.distanceFromPlayer <= agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
