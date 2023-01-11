@@ -12,6 +12,10 @@ public enum AiStateId
     MeleeIdle,
     MeleeCombatStance,
     
+    AssaultIdle,
+    AssaultChase,
+    AssaultRetreat,
+    AssaultCombatStance,
 }
 
 public interface IAiState

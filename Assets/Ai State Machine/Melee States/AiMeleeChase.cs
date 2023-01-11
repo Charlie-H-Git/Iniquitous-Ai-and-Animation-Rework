@@ -12,7 +12,7 @@ public class AiMeleeChase : IAiState
 
     public void Enter(AiAgent agent)
     { 
-        
+        Debug.Log("Entered Melee Chase");
         agent.navMeshAgent.enabled = true;
         agent._gameManager.DeRegisterAttacker(agent);
     }
@@ -33,7 +33,7 @@ public class AiMeleeChase : IAiState
         
         //if we are not performing an action
         // if the distance from player is greater than stopping distance
-        if (agent.distanceFromPlayer > agent.maximumAttackRange)
+        if (agent.distanceFromTarget > agent.maximumAttackRange)
         {
             //Set the movement to 1 over time
             enemyAnimatorManager.anim.SetFloat("Vertical", 1 ,0.1f, Time.deltaTime);
@@ -44,7 +44,7 @@ public class AiMeleeChase : IAiState
         Transform navMeshAgentTransform = agent.navMeshAgent.transform;
         //Set navmesh local transform values to zero
         
-        if (agent.distanceFromPlayer <= agent.maximumAttackRange)
+        if (agent.distanceFromTarget <= agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
         }

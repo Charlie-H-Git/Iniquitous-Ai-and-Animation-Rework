@@ -10,8 +10,17 @@ using UnityEngine.AI;
 using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
-[RequireComponent(typeof(EnemyHealth))]
+public enum Architype
+{
+    Melee,
+    Assault,
+    Tank
+}
 
+[RequireComponent(typeof(EnemyHealth))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(EnemyManager))]
 public class AiAgent : MonoBehaviour
 {
     #region ======= State Machine Variables =======
@@ -19,30 +28,32 @@ public class AiAgent : MonoBehaviour
     public AiStateId currentState;
     public AiStateMachine StateMachine;
     public AiStateId initialState;
-
+    public Architype architype;
     #endregion
 
     #region ========== Manager Variables ==========
     public EnemyManager _enemyManager;
     public EnemyAnimatorManager _enemyAnimatorManager;
     public GameManager _gameManager;
+    public RigWeightHandler rigWeightHandler;
     #endregion
     
     public NavMeshAgent navMeshAgent;
     public GameObject player;
+    public Vector3 targetPos;
+    public bool chasingCombatPoint;
     public TMP_Text stateText;
-    
+    public EnemyHealth enemyHealth;
     
     [Header("Idle State Variables")] 
-    public float angleFromPlayer;
-    public float distanceFromPlayer;
+    public float angleFromTarget;
+    public float distanceFromTarget;
     public bool los;
     public bool inCone;
     public bool canSee;
     public float coneAngle;
     public float detectionDistance;
     public LayerMask combatMask;
-    
     
     [Header("Movement Values")]
     private ResetAnimatorBool _resetAnimatorBool;
@@ -58,20 +69,57 @@ public class AiAgent : MonoBehaviour
     public EnemyAttackAction currentAttack;
     public float currentRecoveryTime = 0;
     public bool canDoCombo;
-    
+    public float MaximumAimingRange;
     [Header("Combat Stance Variables")] 
     public float circleRadius;
     public Vector3 target;
+
+    [Header("Ranged Retreat Variables")] 
+    public LayerMask hidableLayers;
+    public EnemyCoverHandler enemyCoverHandler;
+    [Range(-1, 1)] [Tooltip("Lower is a better hiding spot")]
+    public float hideSensitivity = 0;
+    [Range(0,10)]
+    public float MinPlayerDistance = 5;
+    
     private void AssignStates()
     {
+        switch (architype)
+        {
+            case Architype.Melee:
+                RegisterMeleeStates();
+                
+                break;
+            case Architype.Assault:
+                RegisterAssaultStates();
+                break;
+            case Architype.Tank:
+                //Do Thing
+                break;
+        }
+    }
+
+    private void RegisterMeleeStates()
+    {
         StateMachine = new AiStateMachine(this);
-        StateMachine.RegisterState(new AiMeleeChase());
         StateMachine.RegisterState(new AiMeleeIdle());
+        StateMachine.RegisterState(new AiMeleeChase());
         StateMachine.RegisterState(new AiMeleeAttack());
         StateMachine.RegisterState(new AiMeleeCombatStance());
     }
+
+    private void RegisterAssaultStates()
+    {
+        StateMachine = new AiStateMachine(this);
+        StateMachine.RegisterState(new AiAssaultIdle());
+        StateMachine.RegisterState(new AiAssaultChase());
+        StateMachine.RegisterState(new AiAssaultRetreat());
+        StateMachine.RegisterState(new AiAssaultCombatStance());
+    }
     private void Awake()
     {
+        enemyHealth = gameObject.GetComponent<EnemyHealth>();
+        rigWeightHandler = gameObject.GetComponent<RigWeightHandler>();
         _gameManager = FindObjectOfType<GameManager>();
         _enemyRigidbody = GetComponent<Rigidbody>();
         _enemyAnimatorManager = GetComponentInChildren<EnemyAnimatorManager>();
@@ -87,12 +135,12 @@ public class AiAgent : MonoBehaviour
         navMeshAgent.enabled = false;
         _enemyRigidbody.isKinematic = false;
     }
-    public void TargetVectors()
+    public void TargetVectors(Vector3 targetPos, Vector3 origin, Vector3 originForward)
     {
-        Vector3 targetDir = player.transform.position - transform.position;
-        Vector3 forward = transform.forward;
-        distanceFromPlayer = Vector3.Distance(player.transform.position, transform.position);
-        angleFromPlayer =  Vector3.Angle(targetDir, forward);
+        Vector3 targetDir = targetPos - origin;
+        Vector3 forward = originForward;
+        distanceFromTarget = Vector3.Distance(targetPos, origin);
+        angleFromTarget =  Vector3.Angle(targetDir, forward);
     }
 
     private void HandleRecoveryTimer()
@@ -126,9 +174,6 @@ public class AiAgent : MonoBehaviour
     //     taunt = false;
     // }
     
-    
-    
-
     // private void OnCollisionEnter(Collision collision)
     // {
     //     if (collision.collider.gameObject.CompareTag("Enemy"))
@@ -140,25 +185,60 @@ public class AiAgent : MonoBehaviour
     //     }
     // }
 
+    void resetCombatPoint()
+    {
+        if (chasingCombatPoint)
+        {
+            if (distanceFromTarget <= 1)
+            {
+                targetPos = player.transform.position;
+                maximumAttackRange = 5;
+                chasingCombatPoint = false;
+            }
+        }
+    }
+
+    
+    void HealthHandler()
+    {
+        
+        if (enemyHealth.health <= 0)
+        {
+            //DEAD
+        }
+    }
     
     void Update()
     {
+        //print("Cover Line Of Sight = " + enemyCoverHandler.CheckLineOfSight(player.transform));
         currentState = StateMachine.CurrentState;
         StateMachine.Update();
-        Mathf.Clamp(currentRecoveryTime, 0, 10);
-        TargetVectors();
+        TargetVectors(targetPos, transform.position, transform.forward);
         HandleRecoveryTimer();
         _enemyManager.isPerformingAction = _enemyAnimatorManager.anim.GetBool("isInteracting");
-        canDoCombo = _enemyAnimatorManager.anim.GetBool("canDoCombo");
-
-        if (entryAttackBool)
+        
+        switch (architype)
         {
-            entryAttackCounter -= Time.deltaTime;
-            if (entryAttackCounter <= 0)
-            {
-                entryAttackBool = false;
-                entryAttackCounter = 30;
-            }
+            case Architype.Melee:
+                canDoCombo = _enemyAnimatorManager.anim.GetBool("canDoCombo");
+                Mathf.Clamp(currentRecoveryTime, 0, 10);
+                if (entryAttackBool)
+                {
+                    entryAttackCounter -= Time.deltaTime;
+                    if (entryAttackCounter <= 0)
+                    {
+                        entryAttackBool = false;
+                        entryAttackCounter = 30;
+                    }
+                }
+                
+                break;
+            case Architype.Assault:
+                //Do Thing
+                break;
+            case Architype.Tank:
+                //Do Thing
+                break;
         }
         
     }

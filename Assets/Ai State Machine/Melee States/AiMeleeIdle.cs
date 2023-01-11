@@ -47,9 +47,9 @@ public class AiMeleeIdle : IAiState
             agent.los = true;
         }
         //If the player is within the Agents cone of vision and is close enough Set CanSee to true
-        if (agent.angleFromPlayer < agent.coneAngle && agent.angleFromPlayer > -agent.coneAngle)
+        if (agent.angleFromTarget < agent.coneAngle && agent.angleFromTarget > -agent.coneAngle)
         {
-            if ( agent.distanceFromPlayer < agent.detectionDistance)
+            if ( agent.distanceFromTarget < agent.detectionDistance)
             {
                 agent.inCone = true;
             }

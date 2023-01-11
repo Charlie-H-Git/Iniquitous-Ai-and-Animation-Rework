@@ -12,7 +12,7 @@ public class AiMeleeAttack : IAiState
 
     public void Enter(AiAgent agent)
     {
-        
+        Debug.Log("Entered Melee Attack");
     }
 
     public void Update(AiAgent agent)
@@ -21,7 +21,7 @@ public class AiMeleeAttack : IAiState
         EnemyAnimatorManager enemyAnimatorManager = agent._enemyAnimatorManager;
         AttackTarget(agent);
         //HandleRotationToTarget(agent);
-        if (agent.distanceFromPlayer > agent.maximumAttackRange)
+        if (agent.distanceFromTarget > agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeChase);
         }
@@ -52,16 +52,16 @@ public class AiMeleeAttack : IAiState
 
         if (agent.currentAttack != null)
         {
-            if (agent.distanceFromPlayer < agent.currentAttack.minimumDistanceToAttack)
+            if (agent.distanceFromTarget < agent.currentAttack.minimumDistanceToAttack)
             {
                 // agent.StateMachine.ChangeState(AiStateId.MeleeCombatStance);
             }
             else
             {
-                if (agent.distanceFromPlayer < agent.currentAttack.maximumDistanceToAttack)
+                if (agent.distanceFromTarget < agent.currentAttack.maximumDistanceToAttack)
                 {
-                    if (agent.angleFromPlayer <= agent.currentAttack.maximumAttackAngle 
-                        && agent.angleFromPlayer >= agent.currentAttack.minimumAttackAngle)
+                    if (agent.angleFromTarget <= agent.currentAttack.maximumAttackAngle 
+                        && agent.angleFromTarget >= agent.currentAttack.minimumAttackAngle)
                     {
                         if (agent.currentRecoveryTime <= 0 && agent._enemyManager.isPerformingAction == false)
                         {

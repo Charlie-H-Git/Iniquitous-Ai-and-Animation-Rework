@@ -15,6 +15,7 @@ public class AiMeleeCombatStance : IAiState
     public void Enter(AiAgent agent)
     {
         agent._gameManager.RegisterAttacker(agent);
+        Debug.Log("Entered Melee Combat Stance");
     }
 
     public void Update(AiAgent agent)
@@ -28,7 +29,7 @@ public class AiMeleeCombatStance : IAiState
             agent._enemyAnimatorManager.anim.SetFloat("Vertical", 0);
             agent._enemyAnimatorManager.anim.SetFloat("Horizontal", 0);
         }
-        if (agent.distanceFromPlayer > agent.maximumAttackRange)
+        if (agent.distanceFromTarget > agent.maximumAttackRange)
         {
             agent.StateMachine.ChangeState(AiStateId.MeleeChase);
         }
@@ -38,8 +39,6 @@ public class AiMeleeCombatStance : IAiState
             randomDestinationSet = true;
             DecideCirclingAction(agent._enemyAnimatorManager, agent);
         }
-        
-        
         
         if (agent.currentRecoveryTime <= 0 && agent.currentAttack != null)
         {
@@ -128,11 +127,11 @@ public class AiMeleeCombatStance : IAiState
             for (int i = 0; i < agent.enemyAttacks.Length; i++)
             {
                 EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-                if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                    && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+                if (agent.distanceFromTarget <= enemyAttackAction.maximumDistanceToAttack 
+                    && agent.distanceFromTarget >= enemyAttackAction.minimumDistanceToAttack)
                 {
-                    if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                        && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                    if (agent.angleFromTarget <= enemyAttackAction.maximumAttackAngle 
+                        && agent.angleFromTarget >= enemyAttackAction.minimumAttackAngle)
                     {
                         maxScore += enemyAttackAction.attackScore;
                     }
@@ -144,11 +143,11 @@ public class AiMeleeCombatStance : IAiState
             for (int i = 0; i < agent.enemyAttacks.Length; i++)
             {
                 EnemyAttackAction enemyAttackAction = agent.enemyAttacks[i];
-                if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack 
-                    && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+                if (agent.distanceFromTarget <= enemyAttackAction.maximumDistanceToAttack 
+                    && agent.distanceFromTarget >= enemyAttackAction.minimumDistanceToAttack)
                 {
-                    if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle 
-                        && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                    if (agent.angleFromTarget <= enemyAttackAction.maximumAttackAngle 
+                        && agent.angleFromTarget >= enemyAttackAction.minimumAttackAngle)
                     {
                         if (agent.currentAttack != null) 
                             return;
@@ -165,11 +164,11 @@ public class AiMeleeCombatStance : IAiState
         else
         {
             EnemyAttackAction enemyAttackAction = agent.entryAttack[0];
-            if (agent.distanceFromPlayer <= enemyAttackAction.maximumDistanceToAttack
-                && agent.distanceFromPlayer >= enemyAttackAction.minimumDistanceToAttack)
+            if (agent.distanceFromTarget <= enemyAttackAction.maximumDistanceToAttack
+                && agent.distanceFromTarget >= enemyAttackAction.minimumDistanceToAttack)
             {
-                if (agent.angleFromPlayer <= enemyAttackAction.maximumAttackAngle
-                    && agent.angleFromPlayer >= enemyAttackAction.minimumAttackAngle)
+                if (agent.angleFromTarget <= enemyAttackAction.maximumAttackAngle
+                    && agent.angleFromTarget >= enemyAttackAction.minimumAttackAngle)
                 {
                     agent.currentAttack = agent.entryAttack[0];
                     agent.entryAttackBool = true;

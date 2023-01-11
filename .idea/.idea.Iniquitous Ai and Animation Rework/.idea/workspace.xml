@@ -15,6 +15,10 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../Iniquitous-URP-0.2/Assets/Scripts/AI State Machine/AiAgent.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../Iniquitous-URP-0.2/Assets/Scripts/AI State Machine/AiEngagePlayerState.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -28,6 +32,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="XThreadsFramesViewSplitterKey" value="0.27602905" />
     <property name="rider.run.widget.enabled.cache" value="false" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -42,10 +47,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="8304">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="8304" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -70,6 +75,11 @@
       <workItem from="1671186112579" duration="2056000" />
       <workItem from="1672752391663" duration="3279000" />
       <workItem from="1672828157307" duration="3445000" />
+      <workItem from="1673197850094" duration="14518000" />
+      <workItem from="1673262836319" duration="6170000" />
+      <workItem from="1673285120133" duration="19159000" />
+      <workItem from="1673368390631" duration="1057000" />
+      <workItem from="1673435937271" duration="1861000" />
     </task>
     <servers />
   </component>
@@ -81,5 +91,29 @@
   <component name="UnityUnitTestConfiguration" currentTestLauncher="EditMode" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Ai State Machine/Ranged States/AiAssaultChase.cs</url>
+          <line>64</line>
+          <properties documentPath="C:\Users\Charlie\git\Iniquitous Ai and Animation Rework\Assets\Ai State Machine\Ranged States\AiAssaultChase.cs" initialLine="62" containingFunctionPresentation="method 'HandleRotationToTarget'">
+            <startOffsets>
+              <option value="1802" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1865" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="UNITY_DEBUG_RUN_CONFIGURATION">
+        <watch expression="this" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

@@ -13,7 +13,8 @@ using UnityEngine;
             Idle,
             Movement,
             Attack,
-            CombatStance
+            CombatStance,
+            Assault
         }
 
         public VariableCategory variableCategory;
@@ -45,6 +46,12 @@ using UnityEngine;
                 case VariableCategory.CombatStance:
                     DisplayCombatStanceInfo();
                     break;
+                case VariableCategory.Assault:
+                    DisplayGlobalInfo();
+                    DisplayStateInfo();
+                    DisplayIdleInfo();
+                    DisplayMovementInfo();
+                    break;
             }
             
             serializedObject.ApplyModifiedProperties();
@@ -61,6 +68,7 @@ using UnityEngine;
             EditorGUILayout.PropertyField(serializedObject.FindProperty("navMeshAgent"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("player"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("stateText"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("architype"));
         }
 
         void DisplayIdleInfo()
